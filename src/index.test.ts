@@ -72,12 +72,29 @@ describe("inkblot", () => {
     })
   })
 
+  describe("environments", () => {
+    it("skips the style tag when told to, keeping the filter", () => {
+      void spill(overlay, { mode: "cover", inject: false })
+
+      expect(document.getElementById("inkblot-style")).toBeNull()
+      expect(document.getElementById("inkblot-edge")).not.toBeNull()
+    })
+
+    it("no-ops without a DOM, so a server import is safe", async () => {
+      vi.stubGlobal("window", undefined)
+      vi.stubGlobal("document", undefined)
+
+      await expect(spill(overlay, { mode: "cover" })).resolves.toBeUndefined()
+      expect(() => clear(overlay)).not.toThrow()
+    })
+  })
+
   describe("cover", () => {
     it("holds the cover and resolves when the animation ends", async () => {
       const done = spill(overlay, { mode: "cover", colour: "#08080f" })
 
       expect(overlay.classList.contains("inkblot-cover")).toBe(true)
-      expect(overlay.style.backgroundColor).toBe("rgb(8, 8, 15)")
+      expect(overlay.style.getPropertyValue("--inkblot-colour")).toBe("#08080f")
       expect(await settled(done)).toBe(false)
 
       endAnimation(overlay)

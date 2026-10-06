@@ -7,8 +7,12 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./style.css": "./dist/style.css"
   },
+  "jsdelivr": "./dist/index.js",
+  "unpkg": "./dist/index.js",
+  "sideEffects": false,
   "files": [
     "dist",
     "README.md",

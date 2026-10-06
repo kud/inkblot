@@ -9,6 +9,7 @@ export type SpillOptions = {
   from?: Origin
   colour?: string
   duration?: number
+  inject?: boolean
 }
 
 type Plan = { className: string; duration: number }
@@ -36,6 +37,9 @@ const FADED: Record<Mode, Plan> = {
   reveal: { className: "inkblot-fade-out", duration: 400 },
   veil: { className: "inkblot-veil-fade", duration: 280 },
 }
+
+const inBrowser = () =>
+  typeof window !== "undefined" && typeof document !== "undefined"
 
 const pending = new WeakMap<HTMLElement, () => void>()
 
@@ -72,17 +76,19 @@ const isOwnAnimation = (el: HTMLElement, event: Event) =>
   String((event as AnimationEvent).animationName).startsWith("inkblot-")
 
 export const clear = (el: HTMLElement) => {
+  if (!inBrowser()) return
   pending.get(el)?.()
   reset(el)
 }
 
 export const spill = (el: HTMLElement, options: SpillOptions) => {
-  ensureInjected()
+  if (!inBrowser()) return Promise.resolve()
+  ensureInjected(options.inject ?? true)
   clear(el)
   const { className, duration } = planFor(options.mode, options.duration)
 
   el.classList.add("inkblot")
-  if (options.colour) el.style.backgroundColor = options.colour
+  if (options.colour) el.style.setProperty("--inkblot-colour", options.colour)
   if (options.from) placeOrigin(el, options.from)
   el.style.setProperty("--inkblot-duration", `${duration}ms`)
   void el.offsetWidth

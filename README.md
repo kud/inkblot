@@ -84,6 +84,7 @@ type SpillOptions = {
   from?: Origin
   colour?: string
   duration?: number
+  inject?: boolean
 }
 ```
 
@@ -91,8 +92,9 @@ type SpillOptions = {
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `mode`     | `cover`, `reveal` or `veil`, described below.                                                                                |
 | `from`     | Where the ink starts: a viewport `{ x, y }` point, or an element (its centre is used). Defaults to the centre of the screen. |
-| `colour`   | Any CSS colour, applied as the overlay's background.                                                                         |
+| `colour`   | Any CSS colour, set as `--inkblot-colour` on the overlay.                                                                    |
 | `duration` | Milliseconds. Overrides the mode's default.                                                                                  |
+| `inject`   | `false` skips the injected style tag, for a strict CSP; load `@kud/inkblot/style.css` yourself. Default `true`.              |
 
 | Mode     | Default                 | Behaviour                                                                              |
 | -------- | ----------------------- | -------------------------------------------------------------------------------------- |
@@ -108,11 +110,65 @@ type SpillOptions = {
 
 **The overlay.** It is an empty element your page provides. Inkblot fixes it to the viewport, oversized by 60 px on every side (`inset: -60px`) so the displacement never bares a screen edge, and adjusts the origin for that offset for you. Its `z-index` is overridable with `--inkblot-z`.
 
-### Why the CSS ships from JS
+### Styles
 
-A bundler-specific stylesheet import (CSS modules, `?inline`, side-effect CSS imports) is not portable between a Next.js app and a plain Vite or no-bundler site. A `<style>` tag injected from the module works identically in both, with no config.
+No CSS framework, no dependency. Every class is namespaced `inkblot-*` and tuned through custom properties (`--inkblot-colour`, `--inkblot-duration`, `--inkblot-z`), so a Tailwind site and a plain one behave identically and neither stylesheet leaks into the other.
 
-On first `spill()`, the SVG filter and the stylesheet are injected once, idempotently. The cost: a strict CSP needs `style-src` to allow inline styles (or a nonce). The stylesheet is about 2 KB.
+By default the stylesheet is injected once from JS, along with the SVG filter, on the first `spill()`. A bundler-specific stylesheet import (CSS modules, `?inline`, side-effect CSS imports) is not portable between a Next.js app and a plain Vite or no-bundler site; a `<style>` tag injected from the module works the same in both, with no config. The stylesheet is about 2 KB.
+
+Under a strict CSP that forbids inline `<style>`, load the stylesheet yourself and skip the injection:
+
+```ts
+import "@kud/inkblot/style.css"
+import { spill } from "@kud/inkblot"
+
+await spill(overlay, { mode: "cover", inject: false })
+```
+
+The filter is still added to the page as an inline SVG element, which a `style-src` policy does not restrict.
+
+## Environments
+
+**Vanilla.** The two examples above are all there is.
+
+**React.** No adapter: call it from a handler, under your router.
+
+```tsx
+const overlay = useRef<HTMLDivElement>(null)
+
+const go = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+  event.preventDefault()
+  await spill(overlay.current!, { mode: "cover", from: event.currentTarget })
+  router.push(event.currentTarget.href)
+}
+
+return <div ref={overlay} aria-hidden />
+```
+
+**Next.js.** Use it in a client component. Importing the package on the server is safe: it touches neither `window` nor `document` at import time, and `spill()` and `clear()` do nothing outside a browser (`spill()` resolves at once).
+
+```tsx
+"use client"
+
+import { spill } from "@kud/inkblot"
+```
+
+**CDN, no bundler.** The build is a single dependency-free ES module.
+
+```html
+<div id="overlay" aria-hidden="true"></div>
+<script type="module">
+  import { spill } from "https://cdn.jsdelivr.net/npm/@kud/inkblot/dist/index.js"
+
+  document.querySelector("button").addEventListener("click", (event) => {
+    spill(document.querySelector("#overlay"), {
+      mode: "veil",
+      from: event.currentTarget,
+      colour: "#2b1d14",
+    })
+  })
+</script>
+```
 
 ### Out of scope
 

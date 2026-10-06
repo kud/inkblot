@@ -6,6 +6,7 @@ export const stylesheet = `
   position: fixed;
   inset: -60px;
   z-index: var(--inkblot-z, 2147483646);
+  background: var(--inkblot-colour, #000);
   pointer-events: none;
   opacity: 0;
   clip-path: circle(0% at var(--inkblot-x, 50%) var(--inkblot-y, 50%));

@@ -16,7 +16,6 @@ const buildDefs = () => {
     "aria-hidden": "true",
     width: "0",
     height: "0",
-    style: "position:absolute",
   })
   const filter = createSvgNode("filter", {
     id: FILTER_ID,
@@ -43,6 +42,7 @@ const buildDefs = () => {
     }),
   )
   svg.append(filter)
+  svg.style.position = "absolute"
   return svg
 }
 
@@ -53,8 +53,8 @@ const buildStyle = () => {
   return style
 }
 
-export const ensureInjected = () => {
-  if (!document.getElementById(STYLE_ID))
+export const ensureInjected = (injectStyle = true) => {
+  if (injectStyle && !document.getElementById(STYLE_ID))
     (document.head ?? document.documentElement).append(buildStyle())
   if (!document.getElementById(DEFS_ID))
     (document.body ?? document.documentElement).append(buildDefs())
