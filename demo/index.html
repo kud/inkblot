@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>inkblot demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #fdf5e1;
+        --ink: #2b1d14;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: system-ui, sans-serif;
+      }
+
+      main {
+        display: grid;
+        gap: 24px;
+        padding: 24px;
+        max-width: 36rem;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: ui-serif, Georgia, serif;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0;
+        line-height: 1.5;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      button {
+        min-height: 44px;
+        padding: 0 16px;
+        border: 2px solid var(--ink);
+        border-radius: 6px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #ffcf5c;
+      }
+
+      label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>inkblot</h1>
+      <p>
+        Press a button: the ink spills from the centre of the button you
+        pressed. Turn on reduced motion in your system settings to see the fade.
+      </p>
+      <div class="controls">
+        <button data-action="cover">Cover</button>
+        <button data-action="reveal">Reveal</button>
+        <button data-action="veil">Veil</button>
+        <button data-action="both">Cover, then reveal</button>
+        <button data-action="clear">Clear</button>
+      </div>
+      <label>
+        Colour
+        <input id="colour" type="color" value="#08080f" />
+      </label>
+      <p id="status" role="status">Ready.</p>
+    </main>
+    <div id="overlay" aria-hidden="true"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

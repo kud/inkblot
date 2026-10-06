@@ -1,0 +1,54 @@
+{
+  "name": "@kud/inkblot",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A hand-inked page transition: a turbulence-edged circle of colour that spills from a click, in pure CSS and SVG",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "vite",
+    "prepublishOnly": "npm run build"
+  },
+  "homepage": "https://kud.io/projects/inkblot",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kud/inkblot.git"
+  },
+  "author": "kud",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.6.4",
+    "eslint": "10.12.0",
+    "jsdom": "30.1.2",
+    "prettier": "3.9.9",
+    "tsup": "8.5.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.1",
+    "vite": "8.3.2",
+    "vitest": "5.0.3"
+  }
+}
