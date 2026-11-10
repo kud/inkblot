@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { clear, spill } from "./index.js"
+import { clear, defsMarkup, spill } from "./index.js"
 
 const stubReducedMotion = (matches: boolean) =>
   vi.stubGlobal(
@@ -44,6 +44,35 @@ describe("inkblot", () => {
       expect(document.querySelectorAll("#inkblot-defs")).toHaveLength(1)
       expect(document.querySelectorAll("#inkblot-edge")).toHaveLength(1)
       expect(document.querySelectorAll("#inkblot-style")).toHaveLength(1)
+    })
+
+    it("reuses filter defs already in the markup", () => {
+      document.body.innerHTML = defsMarkup
+      document.body.append(overlay)
+
+      void spill(overlay, { mode: "cover" })
+
+      expect(document.querySelectorAll("#inkblot-defs")).toHaveLength(1)
+      expect(document.querySelectorAll("#inkblot-edge")).toHaveLength(1)
+    })
+
+    it("reuses a filter the page declared in its own svg", () => {
+      document.body.innerHTML = `<svg><filter id="inkblot-edge"></filter></svg>`
+
+      void spill(overlay, { mode: "cover" })
+
+      expect(document.querySelectorAll("#inkblot-edge")).toHaveLength(1)
+      expect(document.querySelectorAll("#inkblot-defs")).toHaveLength(0)
+    })
+
+    it("describes the same filter in its static markup as it injects", () => {
+      void spill(overlay, { mode: "cover" })
+
+      const injected = document.getElementById("inkblot-defs")!.outerHTML
+      const template = document.createElement("template")
+      template.innerHTML = defsMarkup
+
+      expect(injected).toBe(template.content.firstElementChild!.outerHTML)
     })
 
     it("keeps the exact turbulence values", () => {

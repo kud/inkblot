@@ -54,7 +54,7 @@ document.addEventListener("click", async (event) => {
 })
 ```
 
-Arrive on the new page and lift the ink. Call this before first paint if the page should start covered:
+Arrive on the new page and lift the ink. To have the page start covered before any script runs, see [Start covered without JavaScript](#start-covered-without-javascript); otherwise call `spill()` before first paint:
 
 ```ts
 import { clear, spill } from "@kud/inkblot"
@@ -73,6 +73,7 @@ window.addEventListener("pageshow", (event) => {
 ```ts
 spill(el: HTMLElement, options: SpillOptions): Promise<void>
 clear(el: HTMLElement): void
+defsMarkup: string
 ```
 
 ```ts
@@ -126,6 +127,33 @@ await spill(overlay, { mode: "cover", inject: false })
 ```
 
 The filter is still added to the page as an inline SVG element, which a `style-src` policy does not restrict.
+
+### Start covered without JavaScript
+
+A page that arrives under the ink can paint covered and play its first reveal before any script runs. Put the stylesheet in the head (`@kud/inkblot/style.css`, linked or inlined) and give the overlay the reveal classes in its markup:
+
+```html
+<div
+  id="overlay"
+  class="inkblot inkblot-reveal"
+  style="--inkblot-colour: #2b1d14; --inkblot-duration: 600ms"
+  aria-hidden="true"
+></div>
+```
+
+and put the filter in the body, so the rough edge is there from the first frame:
+
+```svg
+<svg id="inkblot-defs" aria-hidden="true" width="0" height="0" style="position:absolute"><filter id="inkblot-edge" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.009 0.013" numOctaves="2" seed="11" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="26" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
+```
+
+That markup is exported as `defsMarkup`, for rendering it on the server or at build time, so it stays in step with the package:
+
+```ts
+import { defsMarkup } from "@kud/inkblot"
+```
+
+A later `spill()` finds the filter (by `#inkblot-defs` or `#inkblot-edge`) and does not add a second one, and it replaces the static classes on the overlay when it takes over. Reduced motion is decided in JS, so the static reveal plays inked even under it; a page that cares can choose the classes on the server, or leave them off and call `spill()` instead.
 
 ## Environments
 
