@@ -1,5 +1,5 @@
-export const STYLE_ID = "inkblot-style"
-export const FILTER_ID = "inkblot-edge"
+import { FILTER_ID } from "./ids.js"
+export { FILTER_ID, STYLE_ID } from "./ids.js"
 
 export const stylesheet = `
 .inkblot {
