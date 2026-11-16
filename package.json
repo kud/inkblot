@@ -16,7 +16,9 @@
   },
   "jsdelivr": "./dist/index.js",
   "unpkg": "./dist/index.js",
-  "sideEffects": ["**/*.css"],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "files": [
     "dist",
     "README.md",
