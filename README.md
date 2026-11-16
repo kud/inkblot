@@ -85,6 +85,7 @@ type SpillOptions = {
   colour?: string
   duration?: number
   inject?: boolean
+  reducedMotion?: boolean
 }
 ```
 
@@ -95,6 +96,7 @@ type SpillOptions = {
 | `colour`   | Any CSS colour, set as `--inkblot-colour` on the overlay.                                                                    |
 | `duration` | Milliseconds. Overrides the mode's default.                                                                                  |
 | `inject`   | `false` skips the injected style tag, for a strict CSP; load `@kud/inkblot/style.css` yourself. Default `true`.              |
+| `reducedMotion` | `true` forces a plain fade; `false` forces the spreading ink; omitted follows the OS `prefers-reduced-motion` setting. |
 
 | Mode     | Default                 | Behaviour                                                                              |
 | -------- | ----------------------- | -------------------------------------------------------------------------------------- |
@@ -106,7 +108,7 @@ type SpillOptions = {
 
 `clear(el)` resets the overlay and settles any pending promise. Use it on bfcache restores via `pageshow`, and to lift a veil.
 
-**Reduced motion.** With `prefers-reduced-motion: reduce`, every mode becomes a plain fade: 280 ms in, 400 ms out, 280 ms for the veil. No spreading edge.
+**Reduced motion.** With `prefers-reduced-motion: reduce`, every mode becomes a plain fade: 280 ms in, 400 ms out, 280 ms for the veil. No spreading edge. Pass `reducedMotion: true` to force the fade from an in-app accessibility setting, or `false` to override the OS preference for a deliberate preview; omitting it follows the OS setting at every call.
 
 **The overlay.** It is an empty element your page provides. Inkblot fixes it to the viewport, oversized by 60 px on every side (`inset: -60px`) so the displacement never bares a screen edge, and adjusts the origin for that offset for you. Its `z-index` is overridable with `--inkblot-z`.
 

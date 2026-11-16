@@ -10,6 +10,8 @@ export type SpillOptions = {
   colour?: string
   duration?: number
   inject?: boolean
+  /** Override the OS preference for this spill only; undefined follows matchMedia. */
+  reducedMotion?: boolean
 }
 
 type Plan = { className: string; duration: number }
@@ -47,8 +49,8 @@ const prefersReducedMotion = () =>
   typeof window.matchMedia === "function" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
-const planFor = (mode: Mode, duration?: number): Plan => {
-  const plan = prefersReducedMotion() ? FADED[mode] : INKED[mode]
+const planFor = (mode: Mode, duration?: number, reducedMotion?: boolean): Plan => {
+  const plan = (reducedMotion ?? prefersReducedMotion()) ? FADED[mode] : INKED[mode]
   return { ...plan, duration: duration ?? plan.duration }
 }
 
@@ -85,7 +87,7 @@ export const spill = (el: HTMLElement, options: SpillOptions) => {
   if (!inBrowser()) return Promise.resolve()
   ensureInjected(options.inject ?? true)
   clear(el)
-  const { className, duration } = planFor(options.mode, options.duration)
+  const { className, duration } = planFor(options.mode, options.duration, options.reducedMotion)
 
   el.classList.add("inkblot")
   if (options.colour) el.style.setProperty("--inkblot-colour", options.colour)
