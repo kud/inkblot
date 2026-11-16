@@ -184,12 +184,16 @@ describe("inkblot", () => {
     it("slows normal and reduced-motion defaults by the same factor", () => {
       setTimeScale(4)
       void spill(overlay, { mode: "cover" })
-      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("2000ms")
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "2000ms",
+      )
 
       stubReducedMotion(true)
       void spill(overlay, { mode: "reveal" })
       expect(overlay.classList.contains("inkblot-fade-out")).toBe(true)
-      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("1600ms")
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "1600ms",
+      )
     })
 
     it("also scales explicitly configured durations", () => {
@@ -212,7 +216,9 @@ describe("inkblot", () => {
       for (const value of [0, -1, NaN, Infinity, -Infinity])
         expect(() => setTimeScale(value)).toThrow(RangeError)
       void spill(overlay, { mode: "cover" })
-      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("1000ms")
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "1000ms",
+      )
     })
   })
 
