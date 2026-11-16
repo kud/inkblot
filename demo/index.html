@@ -4,6 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>inkblot demo</title>
+    <meta
+      name="description"
+      content="Tap anywhere and watch a hand-inked circle of colour spill from where you tapped."
+    />
+    <link rel="canonical" href="https://kud.io/projects/inkblot/demo/" />
     <style>
       :root {
         color-scheme: light;
@@ -14,11 +19,14 @@
       body {
         margin: 0;
         min-height: 100vh;
+        min-height: 100dvh;
         display: grid;
         place-items: center;
         background: var(--paper);
         color: var(--ink);
         font-family: system-ui, sans-serif;
+        cursor: crosshair;
+        -webkit-tap-highlight-color: transparent;
       }
 
       main {
@@ -39,13 +47,43 @@
         line-height: 1.5;
       }
 
-      .controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
+      a {
+        color: inherit;
       }
 
+      .controls {
+        display: grid;
+        gap: 16px;
+        cursor: auto;
+      }
+
+      fieldset {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      legend {
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+
+      .mode {
+        position: relative;
+      }
+
+      .mode input {
+        position: absolute;
+        opacity: 0;
+      }
+
+      .mode span,
       button {
+        display: inline-flex;
+        align-items: center;
         min-height: 44px;
         padding: 0 16px;
         border: 2px solid var(--ink);
@@ -55,10 +93,30 @@
         font: inherit;
         font-weight: 600;
         cursor: pointer;
+        box-sizing: border-box;
       }
 
-      button:hover {
+      .mode input:checked + span {
+        background: var(--ink);
+        color: var(--paper);
+      }
+
+      .mode input:focus-visible + span,
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid #ffcf5c;
+        outline-offset: 2px;
+      }
+
+      button:hover,
+      .mode span:hover {
         background: #ffcf5c;
+        color: var(--ink);
+      }
+
+      button[data-swatch] {
+        width: 44px;
+        padding: 0;
       }
 
       label {
@@ -66,27 +124,77 @@
         align-items: center;
         gap: 8px;
       }
+
+      input[type="color"] {
+        width: 44px;
+        height: 44px;
+      }
     </style>
   </head>
   <body>
     <main>
       <h1>inkblot</h1>
       <p>
-        Press a button: the ink spills from the centre of the button you
-        pressed. Turn on reduced motion in your system settings to see the fade.
+        Tap anywhere on the page: the ink spills from where you tapped. Pick a
+        mode and a colour first, or preview the plain fade people with reduced
+        motion see.
       </p>
       <div class="controls">
-        <button data-action="cover">Cover</button>
-        <button data-action="reveal">Reveal</button>
-        <button data-action="veil">Veil</button>
-        <button data-action="both">Cover, then reveal</button>
-        <button data-action="clear">Clear</button>
+        <fieldset>
+          <legend>Mode</legend>
+          <label class="mode">
+            <input type="radio" name="mode" value="cover" checked />
+            <span>Cover</span>
+          </label>
+          <label class="mode">
+            <input type="radio" name="mode" value="reveal" />
+            <span>Reveal</span>
+          </label>
+          <label class="mode">
+            <input type="radio" name="mode" value="veil" />
+            <span>Veil</span>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Colour</legend>
+          <button
+            type="button"
+            data-swatch="#08080f"
+            aria-label="Night"
+          ></button>
+          <button
+            type="button"
+            data-swatch="#1f3a93"
+            aria-label="Indigo"
+          ></button>
+          <button
+            type="button"
+            data-swatch="#b3261e"
+            aria-label="Vermilion"
+          ></button>
+          <button
+            type="button"
+            data-swatch="#1e6b52"
+            aria-label="Viridian"
+          ></button>
+          <label>
+            <input id="colour" type="color" value="#08080f" />
+            Custom
+          </label>
+        </fieldset>
+        <label>
+          <input id="reduced" type="checkbox" />
+          Preview reduced motion
+        </label>
+        <div>
+          <button type="button" data-action="clear">Clear</button>
+        </div>
       </div>
-      <label>
-        Colour
-        <input id="colour" type="color" value="#08080f" />
-      </label>
       <p id="status" role="status">Ready.</p>
+      <p>
+        <a href="https://github.com/kud/inkblot">Source on GitHub</a> ·
+        <a href="https://kud.io/projects/inkblot/docs">Documentation</a>
+      </p>
     </main>
     <div id="overlay" aria-hidden="true"></div>
     <script type="module" src="./main.ts"></script>
