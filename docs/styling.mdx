@@ -7,11 +7,11 @@ Inkblot ships no CSS framework and no dependency. Every class is namespaced `ink
 
 ## Custom properties
 
-| Property             | Purpose                                                                  |
-| -------------------- | ------------------------------------------------------------------------ |
-| `--inkblot-colour`   | The ink colour. Set for you from the `colour` option.                    |
-| `--inkblot-duration` | Animation length. Set for you from the mode or the `duration` option.    |
-| `--inkblot-z`        | The overlay's `z-index`. Defaults to `2147483646`; set it yourself.      |
+| Property             | Purpose                                                               |
+| -------------------- | --------------------------------------------------------------------- |
+| `--inkblot-colour`   | The ink colour. Set for you from the `colour` option.                 |
+| `--inkblot-duration` | Animation length. Set for you from the mode or the `duration` option. |
+| `--inkblot-z`        | The overlay's `z-index`. Defaults to `2147483646`; set it yourself.   |
 
 ```css
 #overlay {
@@ -43,3 +43,5 @@ The filter is still added to the page as an inline SVG element, which a `style-s
 ## Reduced motion
 
 With `prefers-reduced-motion: reduce`, every mode becomes a plain fade with no spreading edge: 280 ms in, 400 ms out, and 280 ms for the veil. An explicit `duration` still applies.
+
+A per-call `reducedMotion` option overrides the media query: set `true` to force a fade from an in-app accessibility switch, or `false` to preview the full spreading effect. Leave it out to respect the operating system at every call.

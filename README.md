@@ -96,7 +96,8 @@ type SpillOptions = {
 | `colour`   | Any CSS colour, set as `--inkblot-colour` on the overlay.                                                                    |
 | `duration` | Milliseconds. Overrides the mode's default.                                                                                  |
 | `inject`   | `false` skips the injected style tag, for a strict CSP; load `@kud/inkblot/style.css` yourself. Default `true`.              |
-| `reducedMotion` | `true` forces a plain fade; `false` forces the spreading ink; omitted follows the OS `prefers-reduced-motion` setting. |
+
+**`reducedMotion` option:** `true` forces a plain fade, `false` forces the spreading ink, and omitting it follows the OS `prefers-reduced-motion` setting.
 
 | Mode     | Default                 | Behaviour                                                                              |
 | -------- | ----------------------- | -------------------------------------------------------------------------------------- |
