@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci",
+  "buildCommand": "npm run demo:build",
+  "outputDirectory": "dist-demo",
+  "rewrites": [
+    { "source": "/projects/inkblot/demo/:path*", "destination": "/:path*" }
+  ]
+}
