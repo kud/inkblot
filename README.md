@@ -73,6 +73,7 @@ window.addEventListener("pageshow", (event) => {
 ```ts
 spill(el: HTMLElement, options: SpillOptions): Promise<void>
 clear(el: HTMLElement): void
+setTimeScale(factor: number): void
 ```
 
 ```ts
@@ -105,6 +106,8 @@ type SpillOptions = {
 `spill()` resolves when the overlay is fully covered (`cover`), fully uncovered (`reveal`) or veiled (`veil`). Spilling again on the same element settles the first promise and takes over.
 
 `clear(el)` resets the overlay and settles any pending promise. Use it on bfcache restores via `pageshow`, and to lift a veil.
+
+**Global debug time scale.** Use `setTimeScale(4)` to make all subsequent transitions take four times longer, including explicitly configured durations and reduced-motion fades. `setTimeScale(0.5)` makes them twice as fast, and `setTimeScale(1)` restores normal timing. The factor must be a finite positive number. It applies to subsequent `spill()` calls, not an animation already in progress, and also extends the safety timeout accordingly. Set it once from your app’s debug flag (such as `?slow=4`), not during every render.
 
 **Reduced motion.** With `prefers-reduced-motion: reduce`, every mode becomes a plain fade: 280 ms in, 400 ms out, 280 ms for the veil. No spreading edge.
 

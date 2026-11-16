@@ -17,6 +17,16 @@ type Plan = { className: string; duration: number }
 const OVERSIZE = 60
 const SAFETY_MARGIN_MS = 400
 
+// A debug-only global multiplier; 1 leaves all default and explicit durations unchanged.
+// The same scaled duration feeds the CSS animation and its JS completion timeout.
+let timeScale = 1
+
+export const setTimeScale = (factor: number): void => {
+  if (!Number.isFinite(factor) || factor <= 0)
+    throw new RangeError("Inkblot time scale must be a finite positive number")
+  timeScale = factor
+}
+
 const MODE_CLASSES = [
   "inkblot-cover",
   "inkblot-reveal",
@@ -49,7 +59,7 @@ const prefersReducedMotion = () =>
 
 const planFor = (mode: Mode, duration?: number): Plan => {
   const plan = prefersReducedMotion() ? FADED[mode] : INKED[mode]
-  return { ...plan, duration: duration ?? plan.duration }
+  return { ...plan, duration: (duration ?? plan.duration) * timeScale }
 }
 
 const resolvePoint = (from: Origin) => {
