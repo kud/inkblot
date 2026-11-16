@@ -120,10 +120,12 @@ Under a strict CSP that forbids inline `<style>`, load the stylesheet yourself a
 
 ```ts
 import "@kud/inkblot/style.css"
-import { spill } from "@kud/inkblot"
+import { spill } from "@kud/inkblot/core"
 
-await spill(overlay, { mode: "cover", inject: false })
+await spill(overlay, { mode: "cover" })
 ```
+
+The `/core` entry imports no injectable stylesheet and adds only the SVG filter. The CSS file is a separate import, preserved as a side effect by bundlers. The original `@kud/inkblot` entry (including `inject: false`) remains backwards compatible, but still includes the stylesheet string in its JavaScript bundle.
 
 The filter is still added to the page as an inline SVG element, which a `style-src` policy does not restrict.
 

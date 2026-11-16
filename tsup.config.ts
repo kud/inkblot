@@ -3,7 +3,7 @@ import { defineConfig } from "tsup"
 import { stylesheet } from "./src/styles.ts"
 
 export default defineConfig({
-  entry: ["src/index.ts"],
+  entry: ["src/index.ts", "src/core.ts"],
   format: ["esm"],
   dts: { compilerOptions: { ignoreDeprecations: "6.0" } },
   clean: true,

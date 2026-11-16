@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { clear, spill } from "./index.js"
+import { spill as spillCore } from "./core.js"
 
 const stubReducedMotion = (matches: boolean) =>
   vi.stubGlobal(
@@ -44,6 +45,14 @@ describe("inkblot", () => {
       expect(document.querySelectorAll("#inkblot-defs")).toHaveLength(1)
       expect(document.querySelectorAll("#inkblot-edge")).toHaveLength(1)
       expect(document.querySelectorAll("#inkblot-style")).toHaveLength(1)
+    })
+
+    it("core entry injects only the SVG filter, not the stylesheet", () => {
+      void spillCore(overlay, { mode: "cover" })
+
+      expect(document.getElementById("inkblot-style")).toBeNull()
+      expect(document.getElementById("inkblot-edge")).not.toBeNull()
+      expect(overlay.classList.contains("inkblot-cover")).toBe(true)
     })
 
     it("keeps the exact turbulence values", () => {

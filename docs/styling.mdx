@@ -7,11 +7,11 @@ Inkblot ships no CSS framework and no dependency. Every class is namespaced `ink
 
 ## Custom properties
 
-| Property             | Purpose                                                                  |
-| -------------------- | ------------------------------------------------------------------------ |
-| `--inkblot-colour`   | The ink colour. Set for you from the `colour` option.                    |
-| `--inkblot-duration` | Animation length. Set for you from the mode or the `duration` option.    |
-| `--inkblot-z`        | The overlay's `z-index`. Defaults to `2147483646`; set it yourself.      |
+| Property             | Purpose                                                               |
+| -------------------- | --------------------------------------------------------------------- |
+| `--inkblot-colour`   | The ink colour. Set for you from the `colour` option.                 |
+| `--inkblot-duration` | Animation length. Set for you from the mode or the `duration` option. |
+| `--inkblot-z`        | The overlay's `z-index`. Defaults to `2147483646`; set it yourself.   |
 
 ```css
 #overlay {
@@ -33,10 +33,12 @@ Under a policy that forbids inline `<style>`, load the stylesheet yourself and s
 
 ```ts
 import "@kud/inkblot/style.css"
-import { spill } from "@kud/inkblot"
+import { spill } from "@kud/inkblot/core"
 
-await spill(overlay, { mode: "cover", inject: false })
+await spill(overlay, { mode: "cover" })
 ```
+
+The `/core` entry skips the stylesheet injector entirely, so its JavaScript does not carry the stylesheet string. The default entry keeps `inject: false` for compatibility but still bundles those stylesheet bytes. The `@kud/inkblot/style.css` import is retained by bundlers using the package's CSS-only side-effect declaration.
 
 The filter is still added to the page as an inline SVG element, which a `style-src` policy does not restrict.
 

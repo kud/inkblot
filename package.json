@@ -8,18 +8,22 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css",
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
+    }
   },
   "jsdelivr": "./dist/index.js",
   "unpkg": "./dist/index.js",
-  "sideEffects": false,
+  "sideEffects": ["**/*.css"],
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/check-core-bundle.mjs",
     "build:watch": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
