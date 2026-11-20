@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { clear, defsMarkup, spill } from "./index.js"
-import { spill as spillCore } from "./core.js"
+import { clear, defsMarkup, spill, setTimeScale } from "./index.js"
+import { setTimeScale as setCoreTimeScale, spill as spillCore } from "./core.js"
 
 const stubReducedMotion = (matches: boolean) =>
   vi.stubGlobal(
@@ -24,12 +24,14 @@ describe("inkblot", () => {
 
   beforeEach(() => {
     vi.useFakeTimers()
+    setTimeScale(1)
     stubReducedMotion(false)
     overlay = document.createElement("div")
     document.body.append(overlay)
   })
 
   afterEach(() => {
+    setTimeScale(1)
     vi.useRealTimers()
     vi.unstubAllGlobals()
     document.head.innerHTML = ""
@@ -223,6 +225,75 @@ describe("inkblot", () => {
       void spill(overlay, { mode: "cover", duration: 800 })
 
       expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("800ms")
+    })
+  })
+
+  describe("global time scale", () => {
+    it("slows normal and reduced-motion defaults by the same factor", () => {
+      setTimeScale(4)
+      void spill(overlay, { mode: "cover" })
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "2000ms",
+      )
+
+      stubReducedMotion(true)
+      void spill(overlay, { mode: "reveal" })
+      expect(overlay.classList.contains("inkblot-fade-out")).toBe(true)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "1600ms",
+      )
+    })
+
+    it("also scales explicitly configured durations", () => {
+      setTimeScale(0.5)
+      void spill(overlay, { mode: "veil", duration: 800 })
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("400ms")
+    })
+
+    it("scales the animation safety timeout rather than settling early", async () => {
+      setTimeScale(4)
+      const done = spill(overlay, { mode: "cover" })
+      vi.advanceTimersByTime(2399)
+      expect(await settled(done)).toBe(false)
+      vi.advanceTimersByTime(1)
+      expect(await settled(done)).toBe(true)
+    })
+
+    it("rejects invalid scales without corrupting the active scale", () => {
+      setTimeScale(2)
+      for (const value of [0, -1, NaN, Infinity, -Infinity])
+        expect(() => setTimeScale(value)).toThrow(RangeError)
+      void spill(overlay, { mode: "cover" })
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "1000ms",
+      )
+    })
+
+    it("scales the plan chosen by a reducedMotion override", () => {
+      setTimeScale(2)
+      stubReducedMotion(false)
+      void spill(overlay, { mode: "cover", reducedMotion: true })
+      expect(overlay.classList.contains("inkblot-fade-in")).toBe(true)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("560ms")
+
+      stubReducedMotion(true)
+      void spill(overlay, { mode: "reveal", reducedMotion: false })
+      expect(overlay.classList.contains("inkblot-reveal")).toBe(true)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "1200ms",
+      )
+    })
+
+    it("shares one scale between the default and core entries", () => {
+      setCoreTimeScale(3)
+      void spill(overlay, { mode: "cover" })
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "1500ms",
+      )
+      void spillCore(overlay, { mode: "cover" })
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "1500ms",
+      )
     })
   })
 

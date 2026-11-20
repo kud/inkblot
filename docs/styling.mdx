@@ -50,3 +50,7 @@ A per-call `reducedMotion` option overrides the media query. Leaving it out, so 
 
 - `true` forces the fade, for example from an in-app accessibility switch.
 - `false` forces the spreading ink even when the operating system asks for reduced motion. Use it only behind an explicit in-app opt-in the user chose themselves, or on preview and documentation pages that demonstrate the effect. Never make it a default, and never pass it to ship full motion because it looks nicer.
+
+## Debug time scale
+
+Use `setTimeScale(4)` to slow all subsequent transitions to a quarter of their normal speed, including reduced-motion fades and explicit `duration` values. `setTimeScale(0.5)` speeds them up, and `setTimeScale(1)` resets the global multiplier. The same factor applies to the animation's safety timeout so a slowed spill does not resolve prematurely.
