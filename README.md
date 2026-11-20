@@ -54,7 +54,7 @@ document.addEventListener("click", async (event) => {
 })
 ```
 
-Arrive on the new page and lift the ink. Call this before first paint if the page should start covered:
+Arrive on the new page and lift the ink. To have the page start covered before any script runs, see [Start covered without JavaScript](#start-covered-without-javascript); otherwise call `spill()` before first paint:
 
 ```ts
 import { clear, spill } from "@kud/inkblot"
@@ -74,6 +74,7 @@ window.addEventListener("pageshow", (event) => {
 spill(el: HTMLElement, options: SpillOptions): Promise<void>
 clear(el: HTMLElement): void
 setTimeScale(factor: number): void
+defsMarkup: string
 ```
 
 ```ts
@@ -86,16 +87,20 @@ type SpillOptions = {
   colour?: string
   duration?: number
   inject?: boolean
+  reducedMotion?: boolean
 }
 ```
 
-| Option     | Description                                                                                                                  |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `mode`     | `cover`, `reveal` or `veil`, described below.                                                                                |
-| `from`     | Where the ink starts: a viewport `{ x, y }` point, or an element (its centre is used). Defaults to the centre of the screen. |
-| `colour`   | Any CSS colour, set as `--inkblot-colour` on the overlay.                                                                    |
-| `duration` | Milliseconds. Overrides the mode's default.                                                                                  |
-| `inject`   | `false` skips the injected style tag, for a strict CSP; load `@kud/inkblot/style.css` yourself. Default `true`.              |
+| Option          | Description                                                                                                                                        |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mode`          | `cover`, `reveal` or `veil`, described below.                                                                                                      |
+| `from`          | Where the ink starts: a viewport `{ x, y }` point, or an element (its centre is used). Defaults to the centre of the screen.                       |
+| `colour`        | Any CSS colour, set as `--inkblot-colour` on the overlay.                                                                                          |
+| `duration`      | Milliseconds. Overrides the mode's default.                                                                                                        |
+| `inject`        | `false` skips the injected style tag, for a strict CSP; load `@kud/inkblot/style.css` yourself. Default `true`.                                    |
+| `reducedMotion` | Leave it out (recommended) to follow the OS `prefers-reduced-motion` setting. `true` forces the fade; `false` forces the spreading ink, see below. |
+
+**`reducedMotion` option:** omit it. Left `undefined`, every call follows the OS `prefers-reduced-motion` setting, which is the recommended path. `true` forces the plain fade, for example from an in-app accessibility switch. `false` forces the spreading ink even when the OS asks for reduced motion, so keep it narrow: only behind an explicit in-app opt-in the user chose themselves, or on preview and documentation pages that demonstrate the effect. Never make it a default, and never pass it to ship full motion because it looks nicer.
 
 | Mode     | Default                 | Behaviour                                                                              |
 | -------- | ----------------------- | -------------------------------------------------------------------------------------- |
@@ -109,7 +114,7 @@ type SpillOptions = {
 
 **Global debug time scale.** Use `setTimeScale(4)` to make all subsequent transitions take four times longer, including explicitly configured durations and reduced-motion fades. `setTimeScale(0.5)` makes them twice as fast, and `setTimeScale(1)` restores normal timing. The factor must be a finite positive number. It applies to subsequent `spill()` calls, not an animation already in progress, and also extends the safety timeout accordingly. Set it once from your app’s debug flag (such as `?slow=4`), not during every render.
 
-**Reduced motion.** With `prefers-reduced-motion: reduce`, every mode becomes a plain fade: 280 ms in, 400 ms out, 280 ms for the veil. No spreading edge.
+**Reduced motion.** With `prefers-reduced-motion: reduce`, every mode becomes a plain fade: 280 ms in, 400 ms out, 280 ms for the veil. No spreading edge. Omitting `reducedMotion` keeps it that way at every call; see the option above before overriding it.
 
 **The overlay.** It is an empty element your page provides. Inkblot fixes it to the viewport, oversized by 60 px on every side (`inset: -60px`) so the displacement never bares a screen edge, and adjusts the origin for that offset for you. Its `z-index` is overridable with `--inkblot-z`.
 
@@ -123,12 +128,41 @@ Under a strict CSP that forbids inline `<style>`, load the stylesheet yourself a
 
 ```ts
 import "@kud/inkblot/style.css"
-import { spill } from "@kud/inkblot"
+import { spill } from "@kud/inkblot/core"
 
-await spill(overlay, { mode: "cover", inject: false })
+await spill(overlay, { mode: "cover" })
 ```
 
+The `/core` entry imports no injectable stylesheet and adds only the SVG filter. The CSS file is a separate import, preserved as a side effect by bundlers. The original `@kud/inkblot` entry (including `inject: false`) remains backwards compatible, but still includes the stylesheet string in its JavaScript bundle.
+
 The filter is still added to the page as an inline SVG element, which a `style-src` policy does not restrict.
+
+### Start covered without JavaScript
+
+A page that arrives under the ink can paint covered and play its first reveal before any script runs. Put the stylesheet in the head (`@kud/inkblot/style.css`, linked or inlined) and give the overlay the reveal classes in its markup:
+
+```html
+<div
+  id="overlay"
+  class="inkblot inkblot-reveal"
+  style="--inkblot-colour: #2b1d14; --inkblot-duration: 600ms"
+  aria-hidden="true"
+></div>
+```
+
+and put the filter in the body, so the rough edge is there from the first frame:
+
+```svg
+<svg id="inkblot-defs" aria-hidden="true" width="0" height="0" style="position:absolute"><filter id="inkblot-edge" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.009 0.013" numOctaves="2" seed="11" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="26" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
+```
+
+That markup is exported as `defsMarkup`, for rendering it on the server or at build time, so it stays in step with the package:
+
+```ts
+import { defsMarkup } from "@kud/inkblot"
+```
+
+A later `spill()` finds the filter (by `#inkblot-defs` or `#inkblot-edge`) and does not add a second one, and it replaces the static classes on the overlay when it takes over. Reduced motion is decided in JS, so the static reveal plays inked even under it; a page that cares can choose the classes on the server, or leave them off and call `spill()` instead.
 
 ## Environments
 

@@ -33,16 +33,23 @@ Under a policy that forbids inline `<style>`, load the stylesheet yourself and s
 
 ```ts
 import "@kud/inkblot/style.css"
-import { spill } from "@kud/inkblot"
+import { spill } from "@kud/inkblot/core"
 
-await spill(overlay, { mode: "cover", inject: false })
+await spill(overlay, { mode: "cover" })
 ```
+
+The `/core` entry skips the stylesheet injector entirely, so its JavaScript does not carry the stylesheet string. The default entry keeps `inject: false` for compatibility but still bundles those stylesheet bytes. The `@kud/inkblot/style.css` import is retained by bundlers using the package's CSS-only side-effect declaration.
 
 The filter is still added to the page as an inline SVG element, which a `style-src` policy does not restrict.
 
 ## Reduced motion
 
 With `prefers-reduced-motion: reduce`, every mode becomes a plain fade with no spreading edge: 280 ms in, 400 ms out, and 280 ms for the veil. An explicit `duration` still applies.
+
+A per-call `reducedMotion` option overrides the media query. Leaving it out, so every call follows the operating system, is the recommended path.
+
+- `true` forces the fade, for example from an in-app accessibility switch.
+- `false` forces the spreading ink even when the operating system asks for reduced motion. Use it only behind an explicit in-app opt-in the user chose themselves, or on preview and documentation pages that demonstrate the effect. Never make it a default, and never pass it to ship full motion because it looks nicer.
 
 ## Debug time scale
 

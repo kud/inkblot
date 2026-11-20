@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { clear, spill, setTimeScale } from "./index.js"
+import { clear, defsMarkup, spill, setTimeScale } from "./index.js"
+import { setTimeScale as setCoreTimeScale, spill as spillCore } from "./core.js"
 
 const stubReducedMotion = (matches: boolean) =>
   vi.stubGlobal(
@@ -46,6 +47,53 @@ describe("inkblot", () => {
       expect(document.querySelectorAll("#inkblot-defs")).toHaveLength(1)
       expect(document.querySelectorAll("#inkblot-edge")).toHaveLength(1)
       expect(document.querySelectorAll("#inkblot-style")).toHaveLength(1)
+    })
+
+    it("core entry injects only the SVG filter, not the stylesheet", () => {
+      void spillCore(overlay, { mode: "cover" })
+
+      expect(document.getElementById("inkblot-style")).toBeNull()
+      expect(document.getElementById("inkblot-edge")).not.toBeNull()
+      expect(overlay.classList.contains("inkblot-cover")).toBe(true)
+    })
+
+    it("core entry reuses a filter the page already declares", () => {
+      document.body.innerHTML = defsMarkup
+      document.body.append(overlay)
+
+      void spillCore(overlay, { mode: "cover" })
+
+      expect(document.querySelectorAll("#inkblot-edge")).toHaveLength(1)
+      expect(document.getElementById("inkblot-style")).toBeNull()
+    })
+
+    it("reuses filter defs already in the markup", () => {
+      document.body.innerHTML = defsMarkup
+      document.body.append(overlay)
+
+      void spill(overlay, { mode: "cover" })
+
+      expect(document.querySelectorAll("#inkblot-defs")).toHaveLength(1)
+      expect(document.querySelectorAll("#inkblot-edge")).toHaveLength(1)
+    })
+
+    it("reuses a filter the page declared in its own svg", () => {
+      document.body.innerHTML = `<svg><filter id="inkblot-edge"></filter></svg>`
+
+      void spill(overlay, { mode: "cover" })
+
+      expect(document.querySelectorAll("#inkblot-edge")).toHaveLength(1)
+      expect(document.querySelectorAll("#inkblot-defs")).toHaveLength(0)
+    })
+
+    it("describes the same filter in its static markup as it injects", () => {
+      void spill(overlay, { mode: "cover" })
+
+      const injected = document.getElementById("inkblot-defs")!.outerHTML
+      const template = document.createElement("template")
+      template.innerHTML = defsMarkup
+
+      expect(injected).toBe(template.content.firstElementChild!.outerHTML)
     })
 
     it("keeps the exact turbulence values", () => {
@@ -219,6 +267,64 @@ describe("inkblot", () => {
       expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
         "1000ms",
       )
+    })
+
+    it("scales the plan chosen by a reducedMotion override", () => {
+      setTimeScale(2)
+      stubReducedMotion(false)
+      void spill(overlay, { mode: "cover", reducedMotion: true })
+      expect(overlay.classList.contains("inkblot-fade-in")).toBe(true)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("560ms")
+
+      stubReducedMotion(true)
+      void spill(overlay, { mode: "reveal", reducedMotion: false })
+      expect(overlay.classList.contains("inkblot-reveal")).toBe(true)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "1200ms",
+      )
+    })
+
+    it("shares one scale between the default and core entries", () => {
+      setCoreTimeScale(3)
+      void spill(overlay, { mode: "cover" })
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "1500ms",
+      )
+      void spillCore(overlay, { mode: "cover" })
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe(
+        "1500ms",
+      )
+    })
+  })
+
+  describe("reducedMotion option", () => {
+    it("forces the fade when the OS permits motion", () => {
+      stubReducedMotion(false)
+      void spill(overlay, { mode: "cover", reducedMotion: true })
+      expect(overlay.classList.contains("inkblot-fade-in")).toBe(true)
+      expect(overlay.classList.contains("inkblot-cover")).toBe(false)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("280ms")
+    })
+
+    it("permits the ink edge even when the OS requests reduced motion", () => {
+      stubReducedMotion(true)
+      void spill(overlay, { mode: "cover", reducedMotion: false })
+      expect(overlay.classList.contains("inkblot-cover")).toBe(true)
+      expect(overlay.classList.contains("inkblot-fade-in")).toBe(false)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("500ms")
+    })
+
+    it("still honours an explicit duration when motion is forced", () => {
+      stubReducedMotion(false)
+      void spill(overlay, { mode: "veil", reducedMotion: true, duration: 850 })
+      expect(overlay.classList.contains("inkblot-veil-fade")).toBe(true)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("850ms")
+    })
+
+    it("uses the live OS preference when the option is absent", () => {
+      stubReducedMotion(true)
+      void spill(overlay, { mode: "reveal" })
+      expect(overlay.classList.contains("inkblot-fade-out")).toBe(true)
     })
   })
 
