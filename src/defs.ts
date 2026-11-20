@@ -1,4 +1,4 @@
-import { FILTER_ID } from "./styles.js"
+import { FILTER_ID } from "./ids.js"
 
 export const DEFS_ID = "inkblot-defs"
 export const SVG_NS = "http://www.w3.org/2000/svg"

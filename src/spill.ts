@@ -1,5 +1,3 @@
-import { ensureInjected } from "./inject.js"
-
 export type Mode = "cover" | "reveal" | "veil"
 
 export type Origin = { x: number; y: number } | Element
@@ -81,9 +79,13 @@ export const clear = (el: HTMLElement) => {
   reset(el)
 }
 
-export const spill = (el: HTMLElement, options: SpillOptions) => {
+export const spillWithPreparation = (
+  el: HTMLElement,
+  options: SpillOptions,
+  prepare: (injectStyle: boolean) => void,
+) => {
   if (!inBrowser()) return Promise.resolve()
-  ensureInjected(options.inject ?? true)
+  prepare(options.inject ?? true)
   clear(el)
   const { className, duration } = planFor(options.mode, options.duration)
 
