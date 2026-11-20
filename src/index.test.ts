@@ -226,6 +226,37 @@ describe("inkblot", () => {
     })
   })
 
+  describe("reducedMotion option", () => {
+    it("forces the fade when the OS permits motion", () => {
+      stubReducedMotion(false)
+      void spill(overlay, { mode: "cover", reducedMotion: true })
+      expect(overlay.classList.contains("inkblot-fade-in")).toBe(true)
+      expect(overlay.classList.contains("inkblot-cover")).toBe(false)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("280ms")
+    })
+
+    it("permits the ink edge even when the OS requests reduced motion", () => {
+      stubReducedMotion(true)
+      void spill(overlay, { mode: "cover", reducedMotion: false })
+      expect(overlay.classList.contains("inkblot-cover")).toBe(true)
+      expect(overlay.classList.contains("inkblot-fade-in")).toBe(false)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("500ms")
+    })
+
+    it("still honours an explicit duration when motion is forced", () => {
+      stubReducedMotion(false)
+      void spill(overlay, { mode: "veil", reducedMotion: true, duration: 850 })
+      expect(overlay.classList.contains("inkblot-veil-fade")).toBe(true)
+      expect(overlay.style.getPropertyValue("--inkblot-duration")).toBe("850ms")
+    })
+
+    it("uses the live OS preference when the option is absent", () => {
+      stubReducedMotion(true)
+      void spill(overlay, { mode: "reveal" })
+      expect(overlay.classList.contains("inkblot-fade-out")).toBe(true)
+    })
+  })
+
   describe("reduced motion", () => {
     beforeEach(() => stubReducedMotion(true))
 

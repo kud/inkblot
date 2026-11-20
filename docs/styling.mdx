@@ -45,3 +45,8 @@ The filter is still added to the page as an inline SVG element, which a `style-s
 ## Reduced motion
 
 With `prefers-reduced-motion: reduce`, every mode becomes a plain fade with no spreading edge: 280 ms in, 400 ms out, and 280 ms for the veil. An explicit `duration` still applies.
+
+A per-call `reducedMotion` option overrides the media query. Leaving it out, so every call follows the operating system, is the recommended path.
+
+- `true` forces the fade, for example from an in-app accessibility switch.
+- `false` forces the spreading ink even when the operating system asks for reduced motion. Use it only behind an explicit in-app opt-in the user chose themselves, or on preview and documentation pages that demonstrate the effect. Never make it a default, and never pass it to ship full motion because it looks nicer.

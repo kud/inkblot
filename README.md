@@ -86,16 +86,20 @@ type SpillOptions = {
   colour?: string
   duration?: number
   inject?: boolean
+  reducedMotion?: boolean
 }
 ```
 
-| Option     | Description                                                                                                                  |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `mode`     | `cover`, `reveal` or `veil`, described below.                                                                                |
-| `from`     | Where the ink starts: a viewport `{ x, y }` point, or an element (its centre is used). Defaults to the centre of the screen. |
-| `colour`   | Any CSS colour, set as `--inkblot-colour` on the overlay.                                                                    |
-| `duration` | Milliseconds. Overrides the mode's default.                                                                                  |
-| `inject`   | `false` skips the injected style tag, for a strict CSP; load `@kud/inkblot/style.css` yourself. Default `true`.              |
+| Option          | Description                                                                                                                                        |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mode`          | `cover`, `reveal` or `veil`, described below.                                                                                                      |
+| `from`          | Where the ink starts: a viewport `{ x, y }` point, or an element (its centre is used). Defaults to the centre of the screen.                       |
+| `colour`        | Any CSS colour, set as `--inkblot-colour` on the overlay.                                                                                          |
+| `duration`      | Milliseconds. Overrides the mode's default.                                                                                                        |
+| `inject`        | `false` skips the injected style tag, for a strict CSP; load `@kud/inkblot/style.css` yourself. Default `true`.                                    |
+| `reducedMotion` | Leave it out (recommended) to follow the OS `prefers-reduced-motion` setting. `true` forces the fade; `false` forces the spreading ink, see below. |
+
+**`reducedMotion` option:** omit it. Left `undefined`, every call follows the OS `prefers-reduced-motion` setting, which is the recommended path. `true` forces the plain fade, for example from an in-app accessibility switch. `false` forces the spreading ink even when the OS asks for reduced motion, so keep it narrow: only behind an explicit in-app opt-in the user chose themselves, or on preview and documentation pages that demonstrate the effect. Never make it a default, and never pass it to ship full motion because it looks nicer.
 
 | Mode     | Default                 | Behaviour                                                                              |
 | -------- | ----------------------- | -------------------------------------------------------------------------------------- |
@@ -107,7 +111,7 @@ type SpillOptions = {
 
 `clear(el)` resets the overlay and settles any pending promise. Use it on bfcache restores via `pageshow`, and to lift a veil.
 
-**Reduced motion.** With `prefers-reduced-motion: reduce`, every mode becomes a plain fade: 280 ms in, 400 ms out, 280 ms for the veil. No spreading edge.
+**Reduced motion.** With `prefers-reduced-motion: reduce`, every mode becomes a plain fade: 280 ms in, 400 ms out, 280 ms for the veil. No spreading edge. Omitting `reducedMotion` keeps it that way at every call; see the option above before overriding it.
 
 **The overlay.** It is an empty element your page provides. Inkblot fixes it to the viewport, oversized by 60 px on every side (`inset: -60px`) so the displacement never bares a screen edge, and adjusts the origin for that offset for you. Its `z-index` is overridable with `--inkblot-z`.
 
