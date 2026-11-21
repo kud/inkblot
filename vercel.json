@@ -13,22 +13,5 @@
       "source": "/projects/inkblot/demo/:path*",
       "destination": "/:path*"
     }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "inkblot-demo.vercel.app"
-        }
-      ],
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex"
-        }
-      ]
-    }
   ]
 }
