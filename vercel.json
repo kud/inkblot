@@ -5,13 +5,30 @@
   "buildCommand": "npm run demo:build",
   "outputDirectory": "demo/dist",
   "rewrites": [
-    { "source": "/projects/inkblot/demo", "destination": "/index.html" },
-    { "source": "/projects/inkblot/demo/:path*", "destination": "/:path*" }
+    {
+      "source": "/projects/inkblot/demo",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/projects/inkblot/demo/:path*",
+      "destination": "/:path*"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
-      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
+      "has": [
+        {
+          "type": "host",
+          "value": "inkblot-demo.vercel.app"
+        }
+      ],
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
     }
   ]
 }
