@@ -3,92 +3,432 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Try inkblot: a hand-inked page transition that spills from wherever you click."
+    />
     <title>inkblot demo</title>
     <style>
       :root {
-        color-scheme: light;
-        --paper: #fdf5e1;
-        --ink: #2b1d14;
+        --paper: #f7f1e3;
+        --ink: #221a14;
+        --muted: #6b5d50;
+        --rule: #d9ceb8;
+        --focus: #2f4fd6;
+        --swatch-ink: #1c1612;
+        --swatch-indigo: #2c3f9e;
+        --swatch-vermilion: #c8402a;
+        --swatch-moss: #3d6b4c;
+        --swatch-ochre: #d39a22;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #15120f;
+          --ink: #efe6d4;
+          --muted: #a89a86;
+          --rule: #3a322a;
+          --focus: #9fb2ff;
+          --swatch-ink: #efe6d4;
+          --swatch-indigo: #6f83e6;
+          --swatch-vermilion: #ec6a51;
+          --swatch-moss: #6fa780;
+          --swatch-ochre: #e6b24a;
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
       }
 
       body {
         margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
         background: var(--paper);
         color: var(--ink);
-        font-family: system-ui, sans-serif;
+        font:
+          400 1rem/1.5 system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        -webkit-tap-highlight-color: transparent;
       }
 
-      main {
+      /* The whole viewport is one button: a click spills from the pointer,
+         Enter or Space from the centre. Content sits above it and lets
+         clicks fall through, except for the controls. */
+      #stage {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        cursor: crosshair;
+        touch-action: manipulation;
+      }
+
+      #stage:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: -8px;
+        border-radius: 12px;
+      }
+
+      .page {
+        position: relative;
+        z-index: 1;
+        min-height: 100%;
         display: grid;
-        gap: 24px;
-        padding: 24px;
-        max-width: 36rem;
+        grid-template-rows: auto 1fr auto;
+        gap: 32px;
+        padding: max(24px, env(safe-area-inset-top)) 24px
+          max(24px, env(safe-area-inset-bottom));
+        max-width: 56rem;
+        margin: 0 auto;
+        pointer-events: none;
       }
 
-      h1 {
+      header h1 {
         margin: 0;
-        font-family: ui-serif, Georgia, serif;
-        font-weight: 600;
+        font:
+          500 clamp(2rem, 6vw, 3rem) / 1.1 ui-serif,
+          "Iowan Old Style",
+          Georgia,
+          serif;
+        letter-spacing: -0.01em;
       }
 
-      p {
+      header p {
+        margin: 8px 0 0;
+        max-width: 32rem;
+        color: var(--muted);
+      }
+
+      .hint {
+        align-self: center;
+        justify-self: center;
         margin: 0;
-        line-height: 1.5;
+        color: var(--muted);
+        font-size: 0.9375rem;
+        text-align: center;
       }
 
       .controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
+        display: grid;
+        gap: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--rule);
+        pointer-events: auto;
       }
 
-      button {
-        min-height: 44px;
-        padding: 0 16px;
-        border: 2px solid var(--ink);
-        border-radius: 6px;
-        background: transparent;
-        color: inherit;
-        font: inherit;
-        font-weight: 600;
+      @media (min-width: 44rem) {
+        .controls {
+          grid-template-columns: auto auto 1fr;
+          align-items: start;
+          gap: 32px;
+        }
+      }
+
+      fieldset {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+      }
+
+      legend,
+      .label {
+        padding: 0;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 0.8125rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      /* Mode: a segmented control built from native radios. */
+      .segments {
+        display: inline-flex;
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+        padding: 3px;
+      }
+
+      .segments label {
+        position: relative;
+      }
+
+      .segments input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        margin: 0;
         cursor: pointer;
       }
 
-      button:hover {
-        background: #ffcf5c;
+      .segments span {
+        display: block;
+        min-width: 72px;
+        padding: 9px 16px;
+        border-radius: 999px;
+        text-align: center;
+        font-weight: 500;
       }
 
-      label {
+      .segments input:checked + span {
+        background: var(--ink);
+        color: var(--paper);
+      }
+
+      .segments input:focus-visible + span {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      /* Colour swatches, also native radios. */
+      .swatches {
+        display: flex;
+        gap: 10px;
+      }
+
+      .swatches label {
+        position: relative;
+        display: block;
+        width: 44px;
+        height: 44px;
+      }
+
+      .swatches input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        margin: 0;
+        cursor: pointer;
+      }
+
+      .swatches span {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: var(--swatch);
+        box-shadow: inset 0 0 0 1px
+          color-mix(in srgb, var(--ink) 18%, transparent);
+      }
+
+      .swatches input:checked + span {
+        box-shadow:
+          0 0 0 3px var(--paper),
+          0 0 0 5px var(--ink);
+      }
+
+      .swatches input:focus-visible + span {
+        outline: 2px solid var(--focus);
+        outline-offset: 6px;
+      }
+
+      /* Reduced-motion preview: a switch on a native checkbox. */
+      .motion {
+        justify-self: start;
+      }
+
+      @media (min-width: 44rem) {
+        .motion {
+          justify-self: end;
+          align-self: end;
+        }
+      }
+
+      .switch {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
+        min-height: 44px;
+        cursor: pointer;
+      }
+
+      .switch input {
+        appearance: none;
+        position: relative;
+        flex: none;
+        width: 44px;
+        height: 26px;
+        margin: 0;
+        border-radius: 999px;
+        background: var(--rule);
+        cursor: pointer;
+        transition: background-color 160ms ease;
+      }
+
+      .switch input::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--paper);
+        transition: transform 160ms ease;
+      }
+
+      .switch input:checked {
+        background: var(--ink);
+      }
+
+      .switch input:checked::after {
+        transform: translateX(18px);
+      }
+
+      .switch input:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 3px;
+      }
+
+      .note {
+        display: block;
+        color: var(--muted);
+        font-size: 0.8125rem;
+      }
+
+      footer {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 16px;
+        font-size: 0.875rem;
+        pointer-events: auto;
+      }
+
+      footer a {
+        color: var(--muted);
+        text-underline-offset: 3px;
+      }
+
+      footer a:hover {
+        color: var(--ink);
+      }
+
+      footer a:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .switch input,
+        .switch input::after {
+          transition: none;
+        }
       }
     </style>
   </head>
   <body>
-    <main>
-      <h1>inkblot</h1>
-      <p>
-        Press a button: the ink spills from the centre of the button you
-        pressed. Turn on reduced motion in your system settings to see the fade.
-      </p>
-      <div class="controls">
-        <button data-action="cover">Cover</button>
-        <button data-action="reveal">Reveal</button>
-        <button data-action="veil">Veil</button>
-        <button data-action="both">Cover, then reveal</button>
-        <button data-action="clear">Clear</button>
+    <button id="stage" type="button" aria-describedby="hint">
+      <span class="visually-hidden">Spill ink from the centre</span>
+    </button>
+
+    <div class="page">
+      <header>
+        <h1>inkblot</h1>
+        <p>
+          A hand-inked page transition: a circle of colour that spills from a
+          click, in CSS and SVG.
+        </p>
+      </header>
+
+      <p class="hint" id="hint">Click or tap anywhere.</p>
+
+      <div>
+        <div class="controls">
+          <fieldset>
+            <legend>Mode</legend>
+            <div class="segments">
+              <label>
+                <input type="radio" name="mode" value="cover" checked />
+                <span>Cover</span>
+              </label>
+              <label>
+                <input type="radio" name="mode" value="reveal" />
+                <span>Reveal</span>
+              </label>
+              <label>
+                <input type="radio" name="mode" value="veil" />
+                <span>Veil</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Colour</legend>
+            <div class="swatches">
+              <label>
+                <input type="radio" name="colour" value="ink" checked />
+                <span style="--swatch: var(--swatch-ink)"></span>
+                <span class="visually-hidden">Ink</span>
+              </label>
+              <label>
+                <input type="radio" name="colour" value="indigo" />
+                <span style="--swatch: var(--swatch-indigo)"></span>
+                <span class="visually-hidden">Indigo</span>
+              </label>
+              <label>
+                <input type="radio" name="colour" value="vermilion" />
+                <span style="--swatch: var(--swatch-vermilion)"></span>
+                <span class="visually-hidden">Vermilion</span>
+              </label>
+              <label>
+                <input type="radio" name="colour" value="moss" />
+                <span style="--swatch: var(--swatch-moss)"></span>
+                <span class="visually-hidden">Moss</span>
+              </label>
+              <label>
+                <input type="radio" name="colour" value="ochre" />
+                <span style="--swatch: var(--swatch-ochre)"></span>
+                <span class="visually-hidden">Ochre</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="motion">
+            <label class="switch">
+              <input id="reduced" type="checkbox" role="switch" />
+              <span>
+                Reduced motion
+                <span class="note" id="motion-note">Follows your system</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <footer>
+          <a href="https://kud.io/projects/inkblot">Website</a>
+          <a href="https://kud.io/projects/inkblot/docs">Documentation</a>
+          <a href="https://github.com/kud/inkblot">GitHub</a>
+          <a href="https://www.npmjs.com/package/@kud/inkblot">npm</a>
+        </footer>
       </div>
-      <label>
-        Colour
-        <input id="colour" type="color" value="#08080f" />
-      </label>
-      <p id="status" role="status">Ready.</p>
-    </main>
+    </div>
+
     <div id="overlay" aria-hidden="true"></div>
+    <p class="visually-hidden" id="status" role="status"></p>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

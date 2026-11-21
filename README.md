@@ -10,7 +10,7 @@
 
 **A hand-inked page transition: a turbulence-edged circle of colour that spills from a click, in pure CSS and SVG**
 
-<a href="https://kud.io/projects/inkblot">Website</a> · <a href="https://kud.io/projects/inkblot/docs">Documentation</a>
+<a href="https://kud.io/projects/inkblot">Website</a> · <a href="https://kud.io/projects/inkblot/docs">Documentation</a> · <a href="https://kud.io/projects/inkblot/demo">Demo</a>
 
 </div>
 
@@ -220,6 +220,6 @@ npm install
 npm test
 ```
 
-Run the demo with `npm run demo` (or `npx vite`). It opens `/demo/`.
+Run the demo with `npm run demo` (or `npx vite`). It opens `/demo/`. `npm run demo:build` builds the hosted version into `demo/dist`, served at [kud.io/projects/inkblot/demo](https://kud.io/projects/inkblot/demo).
 
 📚 **Full documentation → [inkblot/docs](https://kud.io/projects/inkblot/docs)**
