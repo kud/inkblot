@@ -34,6 +34,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "demo": "vite",
+    "demo:build": "vite build --config vite.demo.config.ts",
+    "demo:preview": "vite preview --config vite.demo.config.ts",
     "prepublishOnly": "npm run build"
   },
   "homepage": "https://kud.io/projects/inkblot",
